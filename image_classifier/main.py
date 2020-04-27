@@ -1,12 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-import numpy as np
-import cv2
-from image_process import canny
-from datetime import datetime
+import io
 import os
-import string
 import random
+import string
+from datetime import datetime
+
+import cv2
+import numpy as np
+
+from flask import (Flask, redirect, render_template, request,
+                   send_from_directory, url_for)
 from google.cloud import storage
+from image_process import canny
+from PIL import Image
 
 SAVE_DIR = "./images"
 if not os.path.isdir(SAVE_DIR):
@@ -33,9 +38,9 @@ def send_js(path):
 def upload():
     # settings
     p = os.path.join(
-        app.root_path, 'keras-tutorial-274304-8b2b89137ac6.json')
+        app.root_path, 'key.json')
     storage_client = storage.Client.from_service_account_json(p)
-    bucket = storage_client.get_bucket('keras-tutorial-274304.appspot.com')
+    bucket = storage_client.get_bucket('***')
 
     if request.files['image']:
         # 画像として読み込み
@@ -51,16 +56,17 @@ def upload():
         temp_local_filename = os.path.join(SAVE_DIR, dt_now + ".png")
         cv2.imwrite(temp_local_filename, img)
 
-        # save_path = os.path.join(SAVE_DIR, dt_now + ".png")
-        # cv2.imwrite(save_path, img)
+        # OpenCV -> PIL
+        img_cv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_pil = Image.fromarray(img_cv)
+        # PIL -> Bytes
+        output = io.BytesIO()
+        img_pil.save(output, format='PNG')
 
-        # GCSに保存
+        # save to GCS
         blob = bucket.blob(dt_now + '.png')
-        # blob.upload_from_string(
-        #     stream.read(), content_type=stream.content_type)
-        blob.upload_from_filename(temp_local_filename)
-
-        # os.remove(temp_local_filename)
+        blob.upload_from_string(
+            output.getvalue(), content_type=stream.content_type)
 
         return redirect('/')
 
