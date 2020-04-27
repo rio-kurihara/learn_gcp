@@ -10,8 +10,10 @@ import numpy as np
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory, url_for)
 from google.cloud import storage
-from image_process import canny
 from PIL import Image
+
+from scripts.predict import predict
+
 
 SAVE_DIR = "./images"
 if not os.path.isdir(SAVE_DIR):
@@ -46,15 +48,16 @@ def upload():
         # 画像として読み込み
         stream = request.files.get('image')
         img_array = np.asarray(bytearray(stream.read()), dtype=np.uint8)
-        img = cv2.imdecode(img_array, 1)
+        img = cv2.imdecode(img_array, 0)
 
-        # 変換
-        img = canny(img)
+        # predict
+        img_scaled = img / 255.0
+        img_scaled = (np.expand_dims(img_scaled, 0))
+        pred_label = predict(img_scaled)
+        print(pred_label)
 
         # 保存
         dt_now = datetime.now().strftime("%Y%m%d_%H%M%S_") + random_str(5)
-        temp_local_filename = os.path.join(SAVE_DIR, dt_now + ".png")
-        cv2.imwrite(temp_local_filename, img)
 
         # OpenCV -> PIL
         img_cv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
