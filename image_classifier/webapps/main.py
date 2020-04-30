@@ -1,11 +1,14 @@
+import base64
 import json
 
 import requests
-from flask import request, render_template
-
-from flask import Flask
+from flask import Flask, render_template, request
 
 app = Flask(__name__, static_url_path="")
+
+# load config
+with open('./setting/webapp.json', 'r') as f:
+    config = json.load(f)
 
 
 @app.route('/')
@@ -15,11 +18,20 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    response = requests.post('**URL**')
-    response = response.content.decode()
-    response = eval(response)
-    label = response['label']
-    # label = "aaa"
+    if request.files['image']:
+        # 画像として読み込み
+        stream = request.files.get('image')
+        img_byte = stream.read()
+        img_base64 = base64.b64encode(img_byte)
+        img_str = img_base64.decode('utf-8')
+
+        data = {'img': img_str}
+        response = requests.post(
+            config['backend_URL'], json=json.dumps(data))
+
+        response = response.content.decode()
+        response = eval(response)
+        label = response['label']
 
     return render_template('results.html', message=label)
 

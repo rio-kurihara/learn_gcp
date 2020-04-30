@@ -4,7 +4,7 @@ import json
 from flask import jsonify, request
 import numpy as np
 import cv2
-from analytics.app import predict
+from app import model
 from flask import Flask
 
 app = Flask(__name__, static_url_path="")

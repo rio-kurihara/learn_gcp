@@ -1,14 +1,17 @@
-from tensorflow import keras
+import numpy as np
+from app.network import build
+
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
 
-def model_build():
-    model = keras.Sequential([
-        keras.layers.Flatten(input_shape=(28, 28)),
-        keras.layers.Dense(128, activation='relu'),
-        keras.layers.Dense(10, activation='softmax')
-    ])
+class Classifier:
+    def __init__(self, weight_path):
+        self.model = build()
+        self.model.load_weights(weight_path)
 
-    model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
-    return model
+    def predict(self, img):
+        predictions = self.model.predict(img)
+        label = np.argmax(predictions[0])
+        label_name = class_names[label]
+        return label_name
