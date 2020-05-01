@@ -22,12 +22,11 @@ RUN set -ex && apt-get update && apt-get install -y \
      libtiff-dev
 
 # Copy local code to the container image.
-# ENV APP_HOME /app
 ARG project_dir=/home/work/
-# WORKDIR $APP_HOME
 COPY . .
 
 ADD requirements.txt $project_dir
+ADD key.json $project_dir
 
 # Change Timezone to JP
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
@@ -40,8 +39,7 @@ RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 #     && /usr/local/gcloud/google-cloud-sdk/install.sh
 
 # Install production dependencies.
-RUN pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib pandas \
-    && curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /home/google-cloud-sdk.tar.gz  \
+RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /home/google-cloud-sdk.tar.gz  \
     && mkdir -p /usr/local/gcloud \
     && tar -C /usr/local/gcloud -xvf /home/google-cloud-sdk.tar.gz \
     && /usr/local/gcloud/google-cloud-sdk/install.sh
@@ -53,4 +51,7 @@ ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 WORKDIR $project_dir
 RUN pip install -r requirements.txt
 
+# setting gcloud
+RUN gcloud auth activate-service-account --key-file key.json
+RUN gcloud config set project <pjoject id>
 CMD ["python" "main.py"]
