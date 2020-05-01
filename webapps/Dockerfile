@@ -49,10 +49,6 @@ RUN pip install google-api-python-client google-auth-httplib2 google-auth-oauthl
 # Adding the package path to local
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
-# setting gcloud
-RUN gcloud config set account qwiklabs.2004@gmail.com
-RUN gcloud config set project keras-tutorial-274304
-
 # other package
 WORKDIR $project_dir
 RUN pip install -r requirements.txt
