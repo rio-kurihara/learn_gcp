@@ -25,3 +25,17 @@ docker run --volume <マウント元>:<マウント先> -itd --name <container n
 gcloud auth login
 gcloud config set project <pjoject id>
 ```
+
+## GAE にデプロイ
+
+```
+# From ./webapps
+gcloud app deploy
+```
+
+## 実行
+
+```
+# From ./analytics on GCE
+python run.py
+```
